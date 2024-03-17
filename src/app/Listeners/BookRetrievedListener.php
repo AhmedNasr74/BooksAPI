@@ -25,6 +25,8 @@ class BookRetrievedListener
      */
     public function handle(BookRetrievedEvent $event)
     {
-        Cache::put('book_' . $event->getIsbn(), $event->getBook(), now()->addMonth());
+        if (!Cache::has('book_' . $event->getIsbn())) {
+            Cache::put('book_' . $event->getIsbn(), $event->getBook(), now()->addMonth());
+        }
     }
 }

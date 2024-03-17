@@ -4,29 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Events\BookRetrievedEvent;
 use App\Services\Book\OpenLibrary;
+use App\Services\Book\SearchBook;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class BookController extends Controller
 {
-    public function search(Request $request, OpenLibrary $library)
+    public function search(Request $request, SearchBook $library)
     {
         $isbn = $request->get('isbn');
 
-        $isbn_cache_key = 'book_' . $isbn;
-
-        $is_book_cached = Cache::has($isbn_cache_key);
-
-        $book = $is_book_cached ?  Cache::get($isbn_cache_key)  : $library->search($isbn);
+        $book = $library->search($isbn);
 
         if ($book) {
-            BookRetrievedEvent::dispatchIf(!$is_book_cached, $request->get('isbn'), $book);
+            BookRetrievedEvent::dispatch($request->get('isbn'), $book);
 
             return response()->json([
-                'data' => collect($book)->only('title'),
+                'data' => [
+                    'book_name' => $book
+                ],
+                'source' => class_basename($library),
                 'message' => 'Book Found Successfully',
-                'source' => $is_book_cached ? 'Cache' : 'Service'
             ]);
         }
 

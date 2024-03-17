@@ -4,7 +4,7 @@ namespace App\Services\Book;
 
 use Illuminate\Support\Facades\Http;
 
-class OpenLibrary
+class OpenLibrary implements SearchBook
 {
     public function search($isbn)
     {
@@ -12,6 +12,6 @@ class OpenLibrary
             'q' => $isbn
         ]);
 
-        return $http->json('docs.0');
+        return $http->json('docs.0.title');
     }
 }
